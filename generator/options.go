@@ -213,3 +213,10 @@ func WithNoParse() Option {
 		g.NoParse = true
 	}
 }
+
+// WithBitfield is used to create bitfield enums.
+func WithBitfield() Option {
+	return func(g *GeneratorConfig) {
+		g.BitField = true
+	}
+}

@@ -189,6 +189,7 @@ func (g *Generator) Generate(f *ast.File) ([]byte, error) {
 		// Parse the enum doc statement
 		enum, pErr := g.parseEnum(ts)
 		if pErr != nil {
+			fmt.Println(pErr)
 			continue
 		}
 
@@ -358,7 +359,6 @@ func (g *Generator) parseEnum(ts *ast.TypeSpec) (*Enum, error) {
 						newData, err := strconv.ParseUint(dataVal, 0, 64)
 						if err != nil {
 							err = fmt.Errorf("failed parsing the data part of enum value '%s': %w", value, err)
-							fmt.Println(err)
 							return nil, err
 						}
 						data = newData
@@ -366,7 +366,6 @@ func (g *Generator) parseEnum(ts *ast.TypeSpec) (*Enum, error) {
 						newData, err := strconv.ParseInt(dataVal, 0, 64)
 						if err != nil {
 							err = fmt.Errorf("failed parsing the data part of enum value '%s': %w", value, err)
-							fmt.Println(err)
 							return nil, err
 						}
 						data = newData

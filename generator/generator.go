@@ -227,6 +227,7 @@ func (g *Generator) Generate(f *ast.File) ([]byte, error) {
 			"forcelower":    g.ForceLower,
 			"forceupper":    g.ForceUpper,
 			"noparse":       g.NoParse,
+			"bitField":      g.BitField,
 			// Computed values for cleaner templates
 			"generateParse": generateParse,
 			"parseIsPublic": parseIsPublic,
@@ -295,6 +296,10 @@ func (g *Generator) parseEnum(ts *ast.TypeSpec) (*Enum, error) {
 		enum.Prefix = g.Prefix + enum.Prefix
 	}
 
+	if g.BitField && enum.Type == "string" {
+		return nil, errors.New("bitfield enum only allows none string types")
+	}
+
 	commentPreEnumDecl, _, _ := strings.Cut(ts.Doc.Text(), `ENUM(`)
 	enum.Comment = strings.TrimSpace(commentPreEnumDecl)
 
@@ -332,6 +337,9 @@ func (g *Generator) parseEnum(ts *ast.TypeSpec) (*Enum, error) {
 			valueStr := value
 
 			if strings.Contains(value, `=`) {
+				if g.BitField {
+					return nil, errors.New("bitfield does not allow manuel set values")
+				}
 				// Get the value specified and set the data to that value.
 				equalIndex := strings.Index(value, `=`)
 				dataVal := strings.TrimSpace(value[equalIndex+1:])

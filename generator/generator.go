@@ -297,7 +297,7 @@ func (g *Generator) parseEnum(ts *ast.TypeSpec) (*Enum, error) {
 	}
 
 	if g.BitField && enum.Type == "string" {
-		return nil, errors.New("bitfield enum only allows none string types")
+		return nil, errors.New("bitfield option is not allowed on string types")
 	}
 
 	commentPreEnumDecl, _, _ := strings.Cut(ts.Doc.Text(), `ENUM(`)
@@ -338,7 +338,7 @@ func (g *Generator) parseEnum(ts *ast.TypeSpec) (*Enum, error) {
 
 			if strings.Contains(value, `=`) {
 				if g.BitField {
-					return nil, errors.New("bitfield does not allow manuel set values")
+					return nil, errors.New("manually setting values is not allowed with the bitfield option")
 				}
 				// Get the value specified and set the data to that value.
 				equalIndex := strings.Index(value, `=`)

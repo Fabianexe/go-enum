@@ -25,6 +25,9 @@ const (
 	parseCommentPrefix = `//`
 )
 
+var ErrBitfieldOnString = errors.New("bitfield option is not allowed on string types")
+var ErrBitfieldManuallValue = errors.New("manually setting values is not allowed with the bitfield option")
+
 // Generator is responsible for generating validation files for the given in a go source file.
 type Generator struct {
 	Version   string
@@ -189,7 +192,11 @@ func (g *Generator) Generate(f *ast.File) ([]byte, error) {
 		// Parse the enum doc statement
 		enum, pErr := g.parseEnum(ts)
 		if pErr != nil {
-			fmt.Println(pErr)
+			if errors.Is(pErr, ErrBitfieldOnString) ||
+				errors.Is(pErr, ErrBitfieldManuallValue) {
+				return nil, pErr
+			}
+
 			continue
 		}
 
@@ -298,7 +305,7 @@ func (g *Generator) parseEnum(ts *ast.TypeSpec) (*Enum, error) {
 	}
 
 	if g.BitField && enum.Type == "string" {
-		return nil, errors.New("bitfield option is not allowed on string types")
+		return nil, ErrBitfieldOnString
 	}
 
 	commentPreEnumDecl, _, _ := strings.Cut(ts.Doc.Text(), `ENUM(`)
@@ -339,7 +346,7 @@ func (g *Generator) parseEnum(ts *ast.TypeSpec) (*Enum, error) {
 
 			if strings.Contains(value, `=`) {
 				if g.BitField {
-					return nil, errors.New("manually setting values is not allowed with the bitfield option")
+					return nil, ErrBitfieldManuallValue
 				}
 				// Get the value specified and set the data to that value.
 				equalIndex := strings.Index(value, `=`)
@@ -359,6 +366,7 @@ func (g *Generator) parseEnum(ts *ast.TypeSpec) (*Enum, error) {
 						newData, err := strconv.ParseUint(dataVal, 0, 64)
 						if err != nil {
 							err = fmt.Errorf("failed parsing the data part of enum value '%s': %w", value, err)
+							fmt.Println(err)
 							return nil, err
 						}
 						data = newData
@@ -366,6 +374,7 @@ func (g *Generator) parseEnum(ts *ast.TypeSpec) (*Enum, error) {
 						newData, err := strconv.ParseInt(dataVal, 0, 64)
 						if err != nil {
 							err = fmt.Errorf("failed parsing the data part of enum value '%s': %w", value, err)
+							fmt.Println(err)
 							return nil, err
 						}
 						data = newData

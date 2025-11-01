@@ -483,9 +483,8 @@ func TestBitFieldOfStringFailure(t *testing.T) {
 	f, err := parser.ParseFile(g.fileSet, "TestRequiredErrors", input, parser.ParseComments)
 	assert.Nil(t, err, "Error parsing input")
 
-	enums := g.inspect(f)
-	output, err := g.parseEnum(enums["Animal"])
-	assert.ErrorContains(t, err, "bitfield option is not allowed on string types")
+	output, err := g.Generate(f)
+	assert.ErrorIs(t, err, ErrBitfieldOnString)
 	assert.Empty(t, output)
 	if false { // Debugging statement
 		fmt.Println(output)
@@ -506,9 +505,8 @@ func TestBitFieldManuallyValueFailure(t *testing.T) {
 	f, err := parser.ParseFile(g.fileSet, "TestRequiredErrors", input, parser.ParseComments)
 	assert.Nil(t, err, "Error parsing input")
 
-	enums := g.inspect(f)
-	output, err := g.parseEnum(enums["Animal"])
-	assert.ErrorContains(t, err, "manually setting values is not allowed with the bitfield option")
+	output, err := g.Generate(f)
+	assert.ErrorIs(t, err, ErrBitfieldManuallValue)
 	assert.Empty(t, output)
 	if false { // Debugging statement
 		fmt.Println(output)
